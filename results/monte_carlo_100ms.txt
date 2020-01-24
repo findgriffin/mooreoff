@@ -1,0 +1,17 @@
+For 100ms, 1h simulation.
+
+Daily   p0,     p10,    p20,    p30,    p40,    p50,    p60,    p70,    p80,    p90,    p99,    p99.9,  p99.99, p99.999,p100
+1k      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      1,      1,      1,      1
+10k     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      1,      1,      1,      2,      2
+100k    0,      0,      0,      0,      0,      0,      0,      0,      0,      1,      1,      2,      3,      3,      3
+1MM     0,      0,      0,      0,      1,      1,      1,      2,      2,      3,      4,      6,      7,      8,      8
+10MM    0,      7,      9,      10,     11,     11,     12,     13,     14,     16,     20,     24,     26,     28,     30
+100MM   72,     102,    107,    110,    113,    116,    118,    121,    125,    130,    142,    151,    159,    163,    168
+
+Using SLA of 99.99 to calculate utilization.
+Utilization for 1k is 0.10% of 1 containers.
+Utilization for 10k is 1.00% of 1 containers.
+Utilization for 100k is 3.37% of 3 containers.
+Utilization for 1MM is 14.46% of 7 containers.
+Utilization for 10MM is 39.79% of 26 containers.
+Utilization for 100MM is 70.14% of 159 containers.
