@@ -5,7 +5,7 @@ import random
 from itertools import repeat
 
 
-DURATION_MS = 100
+DURATION_MS = 10
 MIN_PER_HR = 60
 MS_PER_SEC = 1000
 HR_PER_DAY = 24
@@ -105,11 +105,11 @@ utilization_10k = calculate_utilization(PERCENTILES, result_10k, SLA)
 utilization_100k = calculate_utilization(PERCENTILES, result_100k, SLA)
 utilization_1MM = calculate_utilization(PERCENTILES, result_1MM, SLA)
 utilization_10MM = calculate_utilization(PERCENTILES, result_10MM, SLA)
-#utilization_100MM = calculate_utilization(PERCENTILES, result_100MM, SLA)
+utilization_100MM = calculate_utilization(PERCENTILES, result_100MM, SLA)
 print(f"Using SLA of {SLA} to calculate utilization.")
 print(f"Utilization for 1k is {'{0:.2f}'.format(utilization_1k[1]*PERCENT)}% of {utilization_1k[0]} containers.")
 print(f"Utilization for 10k is {'{0:.2f}'.format(utilization_10k[1]*PERCENT)}% of {utilization_10k[0]} containers.")
 print(f"Utilization for 100k is {'{0:.2f}'.format(utilization_100k[1]*PERCENT)}% of {utilization_100k[0]} containers.")
 print(f"Utilization for 1MM is {'{0:.2f}'.format(utilization_1MM[1]*PERCENT)}% of {utilization_1MM[0]} containers.")
 print(f"Utilization for 10MM is {'{0:.2f}'.format(utilization_10MM[1]*PERCENT)}% of {utilization_10MM[0]} containers.")
-#print(f"Utilization for 100MM is {'{0:.2f}'.format(utilization_100MM[1]*PERCENT)}% of {utilization_100MM[0]} containers.")
+print(f"Utilization for 100MM is {'{0:.2f}'.format(utilization_100MM[1]*PERCENT)}% of {utilization_100MM[0]} containers.")
