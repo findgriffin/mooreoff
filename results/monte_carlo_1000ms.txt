@@ -1,0 +1,27 @@
+Simulating 1 hours of one day.
+Monte Carlo: 1 hours, 1000 ms request duration, and 1,000 requests per day. 
+Ran run_monte_carlo in 0.04278826713562012 secs.
+Monte Carlo: 1 hours, 1000 ms request duration, and 10,000 requests per day. 
+Ran run_monte_carlo in 0.09606289863586426 secs.
+Monte Carlo: 1 hours, 1000 ms request duration, and 100,000 requests per day. 
+Ran run_monte_carlo in 0.7066287994384766 secs.
+Monte Carlo: 1 hours, 1000 ms request duration, and 1,000,000 requests per day. 
+Ran run_monte_carlo in 6.584115982055664 secs.
+Monte Carlo: 1 hours, 1000 ms request duration, and 10,000,000 requests per day. 
+Ran run_monte_carlo in 68.33026599884033 secs.
+Monte Carlo: 1 hours, 1000 ms request duration, and 100,000,000 requests per day. 
+Ran run_monte_carlo in 1143.924464225769 secs.
+	p0,	p10,	p20,	p30,	p40,	p50,	p60,	p70,	p80,	p90,	p99,	p99.9,	p99.99,	p99.999,	p100
+1k	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	1,	1,	1,	1
+10k	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	1,	2,	2,	3,	3
+100k	0,	0,	0,	0,	1,	1,	1,	2,	2,	3,	4,	5,	6,	7,	7
+1MM	1,	7,	9,	10,	11,	11,	12,	13,	14,	16,	20,	24,	27,	29,	29
+10MM	74,	102,	107,	110,	113,	116,	118,	121,	125,	130,	142,	150,	157,	164,	166
+100MM	1000,	1115,	1129,	1140,	1149,	1157,	1166,	1175,	1185,	1200,	1236,	1266,	1283,	1292,	1295
+Using SLA of 99.99 to calculate utilization.
+Utilization for 1k is 1.00% of 1 containers.
+Utilization for 10k is 5.05% of 2 containers.
+Utilization for 100k is 16.85% of 6 containers.
+Utilization for 1MM is 38.68% of 27 containers.
+Utilization for 10MM is 71.16% of 157 containers.
+Utilization for 100MM is 89.01% of 1283 containers.
