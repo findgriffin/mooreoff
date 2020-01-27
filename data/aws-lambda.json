@@ -1,0 +1,38 @@
+{
+    "name": "lambda",
+    "url": "https://aws.amazon.com/lambda/pricing/",
+    "prices":
+    "date": "2014-12-17",
+    "components": {
+        [
+            {
+                "name": "Requests",
+                "price": 0.20,
+                "unit": "Million Requests"
+            },
+            {
+                "name": "Duration",
+                "price": 0.000016667,
+                "unit": "GB-Second"
+            }
+        ]
+    },
+    "sizes": [
+        {
+            "type": "minimum",
+            "value": 128,
+            "unit": "MB"
+        }, {
+            "type": "maximum",
+            "value": 3008,
+            "unit": "MB"
+        }, {
+            "type": "increment",
+            "value": 64,
+            "unit": "MB"
+        }
+    ]
+}
+
+
+		
