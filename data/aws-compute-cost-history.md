@@ -3,7 +3,10 @@ How has the price of computing changed on AWS changed over the years?
 
 ## Sources
 Some primary sources for this data.
-[EC2 Instance History](https://aws.amazon.com/blogs/aws/ec2-instance-history/)
+* [EC2 Instance History](https://aws.amazon.com/blogs/aws/ec2-instance-history/)
+* [ec2instances.info](https://ec2instances.info/)
+* [EC2 Instance Timeline](https://instancetyp.es/)
+
 
 ## Cheapest Instance Costs
 What is the minimum cost to run one VM in the cloud? Price is monthly, on-demand.
