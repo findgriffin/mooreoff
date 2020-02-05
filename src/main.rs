@@ -31,9 +31,17 @@ fn run_monte_carlo(duration: u32, daily_traffic: u32) {
     println!("Highest value is {}", bucket_array[bucket_array.len()-1]);
 }
 
+fn timed_monte_carlo(duration: u32, daily_traffic: u32) {
+    let start = Instant::now();
+    run_monte_carlo(duration, daily_traffic);
+    println!("Ran in {} secs.", start.elapsed().as_secs());
+}
 
 fn main() {
-    let start = Instant::now();
-    run_monte_carlo(10, 10000);
-    println!("Ran in {} secs.", start.elapsed().as_secs());
+    timed_monte_carlo(10, 1_000);
+    timed_monte_carlo(10, 10_000);
+    timed_monte_carlo(10, 100_000);
+    timed_monte_carlo(10, 1_000_000);
+    timed_monte_carlo(10, 10_000_000);
+    timed_monte_carlo(10, 100_000_000);
 }
