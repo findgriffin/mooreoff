@@ -1,5 +1,7 @@
 extern crate rand;
 
+use std::time::Instant;
+
 const MS_PER_SEC: u32 = 1000;
 const SEC_PER_MIN: u32 = 60;
 const MIN_PER_HR: u32 = 60;
@@ -31,5 +33,7 @@ fn run_monte_carlo(duration: u32, daily_traffic: u32) {
 
 
 fn main() {
+    let start = Instant::now();
     run_monte_carlo(10, 10000);
+    println!("Ran in {} secs.", start.elapsed().as_secs());
 }
