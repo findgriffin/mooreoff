@@ -1,0 +1,14 @@
+
+# True constants
+HR_PER_DAY = 24
+MIN_PER_HR = 60
+MS_PER_SEC = 1000
+PERCENT = 100
+PERCENTILES = [0, 10, 20, 30, 40, 50, 60, 70,
+               80, 90, 99, 99.9, 99.99, 99.999, 100]
+SEC_PER_MIN = 60
+SIMULATION_HOURS = 1
+THOUSAND = 1000
+
+# Derived constants
+MILLION = THOUSAND * THOUSAND
