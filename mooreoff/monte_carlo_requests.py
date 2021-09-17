@@ -2,7 +2,6 @@
 # Use a Monte Carlo approach to model daily request traffic.
 import time
 import random
-from itertools import repeat
 
 
 DURATION_MS = 10
@@ -12,9 +11,12 @@ HR_PER_DAY = 24
 SEC_PER_MIN = 60
 SIMULATION_HOURS = 1
 PERCENT = 100
+THOUSAND = 1000
+MILLION = 1_000_000
 
 
-PERCENTILES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99, 99.9, 99.99, 99.999, 100]
+PERCENTILES = [0, 10, 20, 30, 40, 50, 60, 70,
+               80, 90, 99, 99.9, 99.99, 99.999, 100]
 
 
 def insert(buckets_per_req, bucket_array):
@@ -38,8 +40,10 @@ def run_insert(duration, buckets, requests):
     for req in range(requests):
         insert(duration, buckets)
 
+
 def sort_buckets(buckets):
     buckets.sort()
+
 
 def print_csv_line(collection, row, prefix=''):
     print(f"{row}\t" + ",\t".join([f"{prefix}{i}" for i in collection]))
@@ -76,13 +80,30 @@ def run_monte_carlo(duration_in_ms, daily_traffic):
     PART_3 = f"and {'{:,}'.format(daily_traffic)} requests per day. "
     print(PART_1 + PART_2 + PART_3)
     buckets = [0] * bucket_count
-    run_insert(duration_in_ms, buckets, int(daily_traffic / SIMULATION_HOURS / HR_PER_DAY))
+    run_insert(duration_in_ms, buckets,
+               int(daily_traffic / SIMULATION_HOURS / HR_PER_DAY))
     sort_buckets(buckets)
-    percentiles = [] 
+    percentiles = []
     for percentile in PERCENTILES:
         bucket = bucket_for_percentile(percentile, bucket_count)
         percentiles.append(buckets[bucket])
     return percentiles
+
+
+def format_large_number(number: int) -> str:
+    if abs(number) >= MILLION:
+        return f"{number/MILLION}MM"
+    elif abs(number) >= THOUSAND:
+        return f"{number/THOUSAND}k"
+    else:
+        return str(number)
+
+
+def print_result(utilization: float, requests: int, containers: int):
+    util_p = utilization * PERCENT
+    req = format_large_number(requests)
+    cont = containers
+    print(f"Utilization for {req} is {util_p:.2f}% of {cont} containers.")
 
 
 SLA = 99.99
@@ -107,9 +128,9 @@ utilization_1MM = calculate_utilization(PERCENTILES, result_1MM, SLA)
 utilization_10MM = calculate_utilization(PERCENTILES, result_10MM, SLA)
 utilization_100MM = calculate_utilization(PERCENTILES, result_100MM, SLA)
 print(f"Using SLA of {SLA} to calculate utilization.")
-print(f"Utilization for 1k is {'{0:.2f}'.format(utilization_1k[1]*PERCENT)}% of {utilization_1k[0]} containers.")
-print(f"Utilization for 10k is {'{0:.2f}'.format(utilization_10k[1]*PERCENT)}% of {utilization_10k[0]} containers.")
-print(f"Utilization for 100k is {'{0:.2f}'.format(utilization_100k[1]*PERCENT)}% of {utilization_100k[0]} containers.")
-print(f"Utilization for 1MM is {'{0:.2f}'.format(utilization_1MM[1]*PERCENT)}% of {utilization_1MM[0]} containers.")
-print(f"Utilization for 10MM is {'{0:.2f}'.format(utilization_10MM[1]*PERCENT)}% of {utilization_10MM[0]} containers.")
-print(f"Utilization for 100MM is {'{0:.2f}'.format(utilization_100MM[1]*PERCENT)}% of {utilization_100MM[0]} containers.")
+print_result(utilization_1k[1], 1000, utilization_1k[0])
+print_result(utilization_10k[1], 10_000, utilization_10k[0])
+print_result(utilization_100k[1], 100_000, utilization_100k[0])
+print_result(utilization_1MM[1], 1_000_000, utilization_1MM[0])
+print_result(utilization_10MM[1], 10_000_000, utilization_10MM[0])
+print_result(utilization_100MM[1], 100_000_000, utilization_100MM[0])
