@@ -132,6 +132,10 @@ dmypy.json
 *.swp
 *.swo
 
+# IntelliJ
+.idea
+**/*.iml
+
 
 #Added by cargo
 
