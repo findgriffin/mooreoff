@@ -1,8 +1,10 @@
 import logging
+from datetime import timedelta
 from typing import Optional
 import argparse
 from mooreoff import monte_carlo
 from mooreoff import constants as const
+from mooreoff.types import SimulationParameters
 
 
 def setup(argv) -> argparse.Namespace:
@@ -31,16 +33,23 @@ def print_result(utilization: float, requests: int, containers: int):
     print(f"Utilization for {req} is {util_p:.2f}% of {cont} containers.")
 
 
+def print_csv_line(collection, row, prefix=''):
+    print(f"{row}\t" + ",\t".join([f"{prefix}{i}" for i in collection]))
+
+
 def run(output: Optional[str] = None) -> str:
-    request_range = [1000 * 10 ** (n - 1) for n in range(1, 3)]
-    duration_ms = 10
+    request_range = [1000 * 10 ** (n - 1) for n in range(1, 6)]
     percentiles = const.PERCENTILES
     sla = 99
+    simulation_length = timedelta(hours=const.SIMULATION_HOURS)
     print(f"Simulating {const.SIMULATION_HOURS} hours of one day.")
     print(f"Using SLA of {sla} to calculate utilization.")
     for requests in request_range:
-        result = monte_carlo.simulate(duration_ms, requests)
-        monte_carlo.print_csv_line(
+        params = SimulationParameters(request_duration_ms=10,
+                                      requests_per_day=requests,
+                                      simulation_length=simulation_length)
+        result = monte_carlo.simulate(params)
+        print_csv_line(
             result, format_large_number(requests))
         utilization = monte_carlo.calculate_utilization(
             percentiles, result, sla)

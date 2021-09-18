@@ -1,9 +1,11 @@
 #! /usr/local/bin/python3
 # Use a Monte Carlo approach to model daily request traffic.
-import time
+import logging
 import random
+import time
 
 from mooreoff import constants as const
+from mooreoff.types import SimulationParameters
 
 
 def insert(buckets_per_req, bucket_array):
@@ -18,7 +20,7 @@ def timeit(func):
         res = func(*args, **kwargs)
         end_time = time.time()
         total_time = end_time - start_time
-        print(f"Ran {func.__name__} in {total_time} secs.")
+        logging.info(f"Ran {func.__name__} in {total_time} secs.")
         return res
     return timer
 
@@ -26,10 +28,6 @@ def timeit(func):
 def run_insert(duration, buckets, requests):
     for req in range(requests):
         insert(duration, buckets)
-
-
-def print_csv_line(collection, row, prefix=''):
-    print(f"{row}\t" + ",\t".join([f"{prefix}{i}" for i in collection]))
 
 
 def bucket_for_percentile(percentile, bucket_count):
@@ -57,16 +55,17 @@ def calculate_utilization(percentiles, results, sla_percentile):
 
 
 @timeit
-def simulate(duration_in_ms, daily_traffic):
-    bucket_count = const.MS_PER_SEC * const.SEC_PER_MIN * const.MIN_PER_HR * \
-                   const.SIMULATION_HOURS
-    PART_1 = f"Monte Carlo: {const.SIMULATION_HOURS} hours, "
-    PART_2 = f"{duration_in_ms} ms request duration, "
-    PART_3 = f"and {'{:,}'.format(daily_traffic)} requests per day. "
-    print(PART_1 + PART_2 + PART_3)
+def simulate(params: SimulationParameters) -> list[int]:
+    bucket_count = const.MS_PER_SEC * params.simulation_length.seconds
+    PART_1 = f"Monte Carlo: {params.simulation_length} hours, "
+    PART_2 = f"{params.request_duration_ms} ms request duration, "
+    PART_3 = f"and {'{:,}'.format(params.requests_per_day)} " \
+             f"requests per day. "
+    logging.info(PART_1 + PART_2 + PART_3)
     buckets = [0] * bucket_count
-    run_insert(duration_in_ms, buckets,
-               int(daily_traffic / const.SIMULATION_HOURS / const.HR_PER_DAY))
+    run_insert(params.request_duration_ms, buckets,
+               int(params.requests_per_day / const.SIMULATION_HOURS /
+                   const.HR_PER_DAY))
     buckets.sort()
     percentiles = []
     for percentile in const.PERCENTILES:
