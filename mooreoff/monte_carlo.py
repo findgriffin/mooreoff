@@ -8,7 +8,7 @@ from mooreoff import constants as const
 from mooreoff.types import SimulationParameters
 
 
-def insert(buckets_per_req, bucket_array):
+def insert(buckets_per_req: int, bucket_array: list[int]):
     start = random.randint(0, len(bucket_array))
     for index in range(start, start + buckets_per_req):
         bucket_array[index % len(bucket_array)] += 1
@@ -25,16 +25,18 @@ def timeit(func):
     return timer
 
 
-def run_insert(duration, buckets, requests):
+def run_insert(duration: int, buckets: list[int], requests: int) -> None:
     for req in range(requests):
         insert(duration, buckets)
 
 
-def bucket_for_percentile(percentile, bucket_count):
+def bucket_for_percentile(percentile: float, bucket_count: int) -> int:
     return min(int(bucket_count*percentile/const.PERCENT), bucket_count-1)
 
 
-def calculate_utilization(percentiles, results, sla_percentile):
+def calculate_utilization(percentiles: list[float],
+                          results: list[float],
+                          sla_percentile: float):
     sla_index = None
     for index in range(len(percentiles)):
         if percentiles[index] == sla_percentile:
@@ -44,7 +46,7 @@ def calculate_utilization(percentiles, results, sla_percentile):
         raise ValueError(f"Could not find {sla_percentile} in percentiles.")
     capacity = int(max(results[sla_index], 1))
     last_bucket = None
-    running_sum = []
+    running_sum: list[float] = []
     for index in range(len(percentiles)):
         if last_bucket is not None:
             deflator = (percentiles[index]-percentiles[index-1]) / \
