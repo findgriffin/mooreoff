@@ -63,20 +63,28 @@ def calculate_utilization(percentiles: list[float],
     return (capacity, sum(running_sum))
 
 
+def buckets_and_requests(
+        params: SimulationParameters) -> tuple[list[int], int]:
+    requests = min(
+        int(params.requests_per_day * const.MIN_SIM_LENGTH_DAYS),
+        const.MAX_REQUESTS_PER_SIMULATION)
+    simulation_secs = requests / params.requests_per_day * const.SEC_PER_DAY
+    bucket_count = int(const.MS_PER_SEC * simulation_secs)
+    simulation_mins = simulation_secs / const.MIN_PER_HR
+    logging.info(f"Simulation mins: {simulation_mins: .2f}.")
+    return [0] * bucket_count, requests
+
+
 @timeit
 def simulate(params: SimulationParameters) -> list[int]:
-    bucket_count = const.MS_PER_SEC * params.simulation_length.seconds
-    PART_1 = f"Monte Carlo: {params.simulation_length} hours, "
-    PART_2 = f"{params.request_duration_ms} ms request duration, "
-    PART_3 = f"and {'{:,}'.format(params.requests_per_day)} " \
-             f"requests per day. "
-    logging.info(PART_1 + PART_2 + PART_3)
-    buckets = [0] * bucket_count
-    run_insert(params.request_duration_ms, buckets,
-               int(params.requests_per_day / const.SIMULATION_HOURS /
-                   const.HR_PER_DAY))
+    logging.info(
+        f"Monte Carlo: {params.request_duration_ms} ms request duration, "
+        f"and {'{:,}'.format(params.requests_per_day)} requests per day. ")
+    buckets, request_count = buckets_and_requests(params)
+    run_insert(params.request_duration_ms, buckets, request_count)
     buckets.sort()
     percentiles = []
+    bucket_count = len(buckets)
     for percentile in const.PERCENTILES:
         bucket = bucket_for_percentile(percentile, bucket_count)
         percentiles.append(buckets[bucket])

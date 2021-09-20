@@ -1,5 +1,4 @@
 import logging
-from datetime import timedelta
 from typing import Optional
 import argparse
 from mooreoff import monte_carlo
@@ -20,6 +19,8 @@ def setup(argv: list[str]) -> argparse.Namespace:
 
 
 def format_large_number(number: int) -> str:
+    if abs(number) >= const.BILLION:
+        return f"{number/const.BILLION} Billion"
     if abs(number) >= const.MILLION:
         return f"{number/const.MILLION}MM"
     elif abs(number) >= const.THOUSAND:
@@ -46,14 +47,11 @@ def run(output: Optional[str] = None) -> None:
     request_range = [10_000 * 10 ** (n - 1) for n in range(1, 5)]
     percentiles = const.PERCENTILES
     sla = 99
-    simulation_length = timedelta(hours=const.SIMULATION_HOURS)
-    logging.info(f"Simulating {const.SIMULATION_HOURS} hours of one day.")
     logging.info(f"Using SLA of {sla} to calculate utilization.")
     results: list[tuple[int, list[int]]] = []
     for requests in request_range:
         params = SimulationParameters(request_duration_ms=10,
-                                      requests_per_day=requests,
-                                      simulation_length=simulation_length)
+                                      requests_per_day=requests)
         result = monte_carlo.simulate(params)
         results.append((requests, result))
         utilization = monte_carlo.calculate_utilization(
