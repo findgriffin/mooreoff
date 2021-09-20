@@ -7,7 +7,7 @@ from mooreoff import constants as const
 from mooreoff.types import SimulationParameters
 
 
-def setup(argv) -> argparse.Namespace:
+def setup(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="This is a Python 3 project.")
     parser.add_argument("--output", type=str, required=False,
@@ -38,19 +38,19 @@ def print_csv_line(collection, row, prefix=''):
 
 
 def run(output: Optional[str] = None) -> str:
-    request_range = [1000 * 10 ** (n - 1) for n in range(1, 6)]
+    request_range = [10_000 * 10 ** (n - 1) for n in range(1, 5)]
     percentiles = const.PERCENTILES
     sla = 99
     simulation_length = timedelta(hours=const.SIMULATION_HOURS)
     print(f"Simulating {const.SIMULATION_HOURS} hours of one day.")
     print(f"Using SLA of {sla} to calculate utilization.")
+    results: list[tuple[int, list[int]]] = []
     for requests in request_range:
         params = SimulationParameters(request_duration_ms=10,
                                       requests_per_day=requests,
                                       simulation_length=simulation_length)
         result = monte_carlo.simulate(params)
-        print_csv_line(
-            result, format_large_number(requests))
+        results.append((requests, result))
         utilization = monte_carlo.calculate_utilization(
             percentiles, result, sla)
         print_result(utilization[1], requests, utilization[0])
