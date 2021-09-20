@@ -20,7 +20,7 @@ def timeit(func):
         res = func(*args, **kwargs)
         end_time = time.time()
         total_time = end_time - start_time
-        logging.info(f"Ran {func.__name__} in {total_time} secs.")
+        logging.info(f"Ran {func.__name__} in {total_time:.2f} secs.")
         return res
     return timer
 
