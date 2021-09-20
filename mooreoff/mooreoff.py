@@ -12,6 +12,8 @@ def setup(argv: list[str]) -> argparse.Namespace:
         description="This is a Python 3 project.")
     parser.add_argument("--output", type=str, required=False,
                         help="A filename to write the output to.")
+    parser.add_argument("--profile", action="store_true",
+                        help="Run with the profiler (cProfile) enabled.")
     parser.add_argument("-v", "--verbose",  action="store_true",
                         help="Enable verbose logging.")
     return parser.parse_args(argv)

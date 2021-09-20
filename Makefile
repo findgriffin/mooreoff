@@ -25,6 +25,9 @@ git-clean:
 run:
 	./run.py
 
+profile:
+	./run.py --profile
+
 clean:
 	rm -rf **/__pycache__
 	rm -rf **/*.pyc
