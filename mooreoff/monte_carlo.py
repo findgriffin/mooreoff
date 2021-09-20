@@ -9,9 +9,16 @@ from mooreoff.types import SimulationParameters
 
 
 def insert(buckets_per_req: int, bucket_array: list[int]):
-    start = random.randint(0, len(bucket_array))
+    max = len(bucket_array) # Perf: Constant to avoid len(list) calls.
+    # Perf: random.randint is slow, so use a different method
+    # for generating random integers, from:
+    #    * https://eli.thegreenplace.net/2018/
+    #      slow-and-fast-methods-for-generating-random-integers-in-python/
+    # Original code:
+    #    start = random.randint(0, max)
+    start = int(max * random.random())
     for index in range(start, start + buckets_per_req):
-        bucket_array[index % len(bucket_array)] += 1
+        bucket_array[index % max] += 1
 
 
 def timeit(func):
