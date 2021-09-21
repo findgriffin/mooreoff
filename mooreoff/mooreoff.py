@@ -1,4 +1,3 @@
-from matplotlib.collections import EventCollection  # type: ignore
 from typing import Optional
 import argparse
 import logging
@@ -68,22 +67,20 @@ def plot_results(results: list[tuple[int, float, float]],
     x_requests = [entry[0] for entry in results]
     y_util = [entry[1]*const.PERCENT for entry in results]
     y_fail = [entry[2]*const.PERCENT for entry in results]
-    ax.plot(x_requests, y_util, color='tab:blue')
-    ax.plot(x_requests, y_fail, color='tab:orange')
-    x_events = EventCollection(x_requests, color='tab:blue', linelength=0.05)
-    util_events = EventCollection(y_util, color='tab:blue', linelength=0.05)
-    fail_events = EventCollection(y_fail, color='tab:orange', linelength=0.05)
+    ax.plot(x_requests, y_util, color='tab:blue', label="Utilization")
+    ax.plot(x_requests, y_fail, color='tab:orange', label="Failure Rate")
 
     yticks = mtick.FormatStrFormatter('%.0f%%')
     ax.yaxis.set_major_formatter(yticks)
     ax.xaxis.set_major_formatter(large_formatter)
 
-    ax.add_collection(x_events)
-    ax.add_collection(util_events)
-    ax.add_collection(fail_events)
     ax.set_ylim([0, const.PERCENT])
+    ax.set_xlim([0, x_requests[-1]])
     ax.set_title(f"Utilization for {params}")
-    plt.show()
+    ax.set_xlabel("Requests per day")
+    ax.legend()
+    ax.grid(linestyle='dotted', linewidth='0.5')
+    return plt
 
 
 def run(output: Optional[str] = None) -> None:
@@ -114,4 +111,5 @@ def run(output: Optional[str] = None) -> None:
                      f" {utilization_percent:.1f}%, with {fail_percent:.1f}% "
                      "requests failing SLA.")
         results.append((requests, utilization_fraction, fail_fraction))
-    plot_results(results, model)
+    plot = plot_results(results, model)
+    plot.show()
