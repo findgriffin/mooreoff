@@ -91,7 +91,7 @@ def run(output: Optional[str] = None) -> None:
         logging.debug(f"Output file: {output}.")
     else:
         logging.debug("No output file given.")
-    model = ModelParameters(req_duration=100, threads=1, sla=200)
+    model = ModelParameters(req_duration=100, threads=4, sla=200)
     capacity = calculate_daily_capacity(model.req_duration, model.threads)
     logging.info(f"Request duration of {model.req_duration}ms, "
                  f"and max_threads of {model.threads} gives a daily capacity "
@@ -105,6 +105,7 @@ def run(output: Optional[str] = None) -> None:
     for requests in request_range:
         params = SimulationParameters(request_duration_ms=model.req_duration,
                                       requests_per_day=requests,
+                                      threads=model.threads,
                                       max_wait=model.sla-model.req_duration)
         utilization_fraction, fail_fraction = monte_carlo.simulate(params)
         fail_percent = fail_fraction * const.PERCENT

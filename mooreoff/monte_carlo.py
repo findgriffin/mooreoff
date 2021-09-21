@@ -147,7 +147,8 @@ def simulate(params: SimulationParameters) -> tuple[float, float]:
     buckets, successes = insert_many_with_sla(bucket_count,
                                               request_count,
                                               params.request_duration_ms,
+                                              max_threads=params.threads,
                                               max_wait=params.max_wait)
     failure_percent = (request_count - successes) / request_count
-    utilization = sum(buckets) / bucket_count
+    utilization = sum(buckets) / (bucket_count * params.threads)
     return utilization, failure_percent
