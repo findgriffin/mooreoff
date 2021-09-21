@@ -10,17 +10,17 @@ class TestInsert(unittest.TestCase):
         # Given
         buckets = [0]
         # When
-        result = mc.insert_with_sla(0, buckets)
+        result = mc.insert_with_sla(0, buckets, len(buckets))
         # Then
         self.assertTrue(result)
         self.assertListEqual(buckets, [1])
 
     # Kind of nonsense because len(bucket_array) should be >> req_len
-    def test_short_array_double_inserts(self):
+    def test_short_array_does_not_insert(self):
         # Given
         buckets = [0]
         # When
-        result = mc.insert_with_sla(0, buckets, 2)
+        result = mc.insert_with_sla(0, buckets, len(buckets), 2)
         # Then
         self.assertTrue(result)
         self.assertListEqual(buckets, [2])
@@ -29,7 +29,7 @@ class TestInsert(unittest.TestCase):
         # Given
         buckets = [0, 0, 0, 0]
         # When
-        result = mc.insert_with_sla(3, buckets, 2)
+        result = mc.insert_with_sla(3, buckets, len(buckets), req_len=2)
         # Then
         self.assertListEqual(buckets, [1, 0, 0, 1])
         self.assertTrue(result)
@@ -38,7 +38,7 @@ class TestInsert(unittest.TestCase):
         # Given
         buckets = [1, 1, 1, 1, 1]
         # When
-        result = mc.insert_with_sla(3, buckets, 2)
+        result = mc.insert_with_sla(3, buckets, len(buckets), req_len=2)
         # Then
         self.assertFalse(result)
         self.assertListEqual(buckets, [1, 1, 1, 1, 1])
@@ -50,7 +50,7 @@ class TestInsert(unittest.TestCase):
         start = 3
         req_len = 2
         # When
-        result = mc.insert_with_sla(3, buckets, 2)
+        result = mc.insert_with_sla(3, buckets, len(buckets), req_len=2)
         # Then
         self.assertTrue(result)
         self.assertListEqual(buckets, [0] * start + [1] * req_len + [0] * (
@@ -107,6 +107,8 @@ class TestInsert(unittest.TestCase):
                          "Over capacity: 11 reqs x 10 buckets > 100 buckets "
                          "x 1 capacity.")
 
+
+class TestMonteCarloPerformance(unittest.TestCase):
     def test_insert_performance_million_reqs(self):
         # Given
         bucket_count, req_count, req_len = (3_600_000, 1_000_000, 2)
@@ -116,7 +118,7 @@ class TestInsert(unittest.TestCase):
         delta = datetime.now() - start
         # Then
         self.assertEqual(delta.days, 0)
-        self.assertLess(delta.seconds, 4)
+        self.assertLess(delta.seconds, 6)
 
     def test_insert_performance_more_reqs(self):
         # Given
@@ -129,4 +131,4 @@ class TestInsert(unittest.TestCase):
 
         # Then
         self.assertEqual(delta.days, 0)
-        self.assertLess(delta.seconds, 5)
+        self.assertLess(delta.seconds, 6)

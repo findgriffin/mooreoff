@@ -3,6 +3,7 @@
 import logging
 import random
 import time
+from typing import Optional
 
 from mooreoff import constants as const
 from mooreoff.types import SimulationParameters
@@ -21,26 +22,42 @@ def insert(buckets_per_req: int, bucket_array: list[int]):
         bucket_array[index % max] += 1
 
 
+def wait(bucket_array: list[int],
+         arr_len: int,
+         original_start: int,
+         fail_horizon,
+         max_threads: int = 1) -> Optional[int]:
+    for index in range(original_start, min(arr_len, fail_horizon)):
+        if bucket_array[index] < max_threads:
+            return index
+    return None
+
+
+def do_actual_insert(bucket_array: list[int],
+                     arr_len: int,
+                     start: int,
+                     end: int) -> None:
+    for index in range(start, end):
+        bucket_array[index % arr_len] += 1
+
+
 # Assumes that never gets called with span[0]_current < span[0]_previous
 def insert_with_sla(req_start: int,
                     bucket_array: list[int],
+                    bucket_count: int,
                     req_len: int = 1,
                     max_wait: int = 1,
                     max_threads: int = 1) -> bool:
-    actual_start = req_start
-    arr_len = len(bucket_array)
     fail_horizon = req_start + req_len + max_wait
-    while bucket_array[actual_start] >= max_threads:
-        actual_start += 1
-        if actual_start >= arr_len or actual_start > fail_horizon:
-            return False
-    final_bucket = actual_start + req_len
-    for index in range(actual_start, final_bucket):
-        bucket_array[index % arr_len] += 1
-    if final_bucket > fail_horizon:
+    actual_start = wait(bucket_array, bucket_count, req_start,
+                        fail_horizon, max_threads)
+    if actual_start is None:
         return False
     else:
-        return True
+        final_bucket = actual_start + req_len
+        do_actual_insert(bucket_array, bucket_count,
+                         actual_start, final_bucket)
+        return final_bucket <= fail_horizon
 
 
 def insert_many_with_sla(bucket_count: int,
@@ -64,7 +81,8 @@ def insert_many_with_sla(bucket_count: int,
     start_vals.sort()  # insert_with_sla only supports inserting in order
     successes = 0
     for val in start_vals:
-        if insert_with_sla(val, buckets, req_len, max_wait, max_threads):
+        if insert_with_sla(val, buckets, bucket_count,
+                           req_len, max_wait, max_threads):
             successes += 1
     return successes
 
