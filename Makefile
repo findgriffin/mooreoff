@@ -11,7 +11,7 @@ types:
 	mypy .
 
 test:
-	coverage run -m unittest discover
+	coverage run --source mooreoff -m unittest discover
 	coverage html
 	coverage report --fail-under=90
 
