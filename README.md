@@ -45,8 +45,8 @@ Examples:
 * 3x / 2x c6g.medium (1vCPU, 2GB, $25/mo ea)
 * 3x "CPU optimized" droplet (2vCPU, 4GB, $40/mo) [pricing](https://www.digitalocean.com/pricing)
 
-#### Max throughput
- * Don't care about H/a
+#### High-performance: Max throughput
+ * Don't care about H/A
  * Oversubscription?
  * Spot?
 
