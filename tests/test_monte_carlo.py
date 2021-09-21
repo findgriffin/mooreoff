@@ -109,6 +109,19 @@ class TestInsert(unittest.TestCase):
 
 
 class TestMonteCarloPerformance(unittest.TestCase):
+
+    def test_insert_performance_hundred_k_reqs(self):
+        # Given
+        bucket_count, req_count, req_len = (3_600_000, 100_000, 2)
+        # When
+        start = datetime.now()
+        mc.insert_many_with_sla(bucket_count, req_count, req_len)
+        delta = datetime.now() - start
+        # Then
+        self.assertEqual(delta.days, 0)
+        self.assertLess(delta.seconds, 1)
+
+    @unittest.skip("Don't run slow perf tests as part of build")
     def test_insert_performance_million_reqs(self):
         # Given
         bucket_count, req_count, req_len = (3_600_000, 1_000_000, 2)
@@ -120,6 +133,7 @@ class TestMonteCarloPerformance(unittest.TestCase):
         self.assertEqual(delta.days, 0)
         self.assertLess(delta.seconds, 6)
 
+    @unittest.skip("Don't run slow perf tests as part of build")
     def test_insert_performance_more_reqs(self):
         # Given
         bucket_count, req_count, req_len = (3_600, 1_000_000, 2)
