@@ -1,9 +1,12 @@
-import logging
+from matplotlib.collections import EventCollection  # type: ignore
 from typing import Optional
 import argparse
-from mooreoff import monte_carlo
+import logging
+import matplotlib.pyplot as plt  # type: ignore
+
 from mooreoff import constants as const
-from mooreoff.types import SimulationParameters
+from mooreoff import monte_carlo
+from mooreoff.types import SimulationParameters, ModelParameters
 
 
 def setup(argv: list[str]) -> argparse.Namespace:
@@ -46,28 +49,46 @@ def calculate_daily_capacity(request_duration_ms: int = 1,
     return int(request_per_day_per_thread * max_threads)
 
 
+def plot_results(results: list[tuple[int, float, float]],
+                 params: ModelParameters):
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    x_requests = [entry[0] for entry in results]
+    y_util = [entry[1]*const.PERCENT for entry in results]
+    y_fail = [entry[2]*const.PERCENT for entry in results]
+    ax.plot(x_requests, y_util, color='tab:blue')
+    ax.plot(x_requests, y_fail, color='tab:orange')
+    x_events = EventCollection(x_requests, color='tab:blue', linelength=0.05)
+    util_events = EventCollection(y_util, color='tab:blue', linelength=0.05)
+    fail_events = EventCollection(y_fail, color='tab:orange', linelength=0.05)
+    ax.add_collection(x_events)
+    ax.add_collection(util_events)
+    ax.add_collection(fail_events)
+    ax.set_ylim([0, const.PERCENT])
+    ax.set_title(f"Utilization for {params}")
+    plt.show()
+
+
 def run(output: Optional[str] = None) -> None:
     if output:
         logging.debug(f"Output file: {output}.")
     else:
         logging.debug("No output file given.")
-    request_duration_ms = 100
-    max_threads = 1
-    max_wait = request_duration_ms
-    capacity = calculate_daily_capacity(request_duration_ms, max_threads)
-    logging.info(f"Request duration of {request_duration_ms}ms, "
-                 f"and max_threads of {max_threads} gives a daily capacity "
+    model = ModelParameters(req_duration=100, threads=1, sla=200)
+    capacity = calculate_daily_capacity(model.req_duration, model.threads)
+    logging.info(f"Request duration of {model.req_duration}ms, "
+                 f"and max_threads of {model.threads} gives a daily capacity "
                  f"of {capacity} requests.")
     num_runs = 10
     step = int(capacity/num_runs)
     request_range = [i for i in range(step, capacity, step)]
     logging.info(f"Running for {request_range}")
-    logging.info(f"Max wait for SLA is {max_wait}ms.")
+    logging.info(f"Max wait for SLA is {model.sla}ms.")
     results: list[tuple[int, float, float]] = []
     for requests in request_range:
-        params = SimulationParameters(request_duration_ms=request_duration_ms,
+        params = SimulationParameters(request_duration_ms=model.req_duration,
                                       requests_per_day=requests,
-                                      max_wait=max_wait)
+                                      max_wait=model.sla-model.req_duration)
         utilization_fraction, fail_fraction = monte_carlo.simulate(params)
         fail_percent = fail_fraction * const.PERCENT
         utilization_percent = utilization_fraction * const.PERCENT
@@ -75,3 +96,4 @@ def run(output: Optional[str] = None) -> None:
                      f" {utilization_percent:.1f}%, with {fail_percent:.1f}% "
                      "requests failing SLA.")
         results.append((requests, utilization_fraction, fail_fraction))
+    plot_results(results, model)
