@@ -3,6 +3,7 @@ from typing import Optional
 import argparse
 import logging
 import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.ticker as mtick  # type: ignore
 
 from mooreoff import constants as const
 from mooreoff import monte_carlo
@@ -19,6 +20,17 @@ def setup(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("-v", "--verbose",  action="store_true",
                         help="Enable verbose logging.")
     return parser.parse_args(argv)
+
+
+def large_formatter(x: float, pos) -> str:
+    if abs(x) >= const.BILLION:
+        return f"{x*1e-9:,.0f}B"
+    elif abs(x) >= const.MILLION:
+        return f"{x*1e-6:.0f}M"
+    elif abs(x) >= const.THOUSAND:
+        return f"{x*1e-3:1.0f}k"
+    else:
+        return f"{x:.0f}"
 
 
 def format_large_number(number: int) -> str:
@@ -61,6 +73,11 @@ def plot_results(results: list[tuple[int, float, float]],
     x_events = EventCollection(x_requests, color='tab:blue', linelength=0.05)
     util_events = EventCollection(y_util, color='tab:blue', linelength=0.05)
     fail_events = EventCollection(y_fail, color='tab:orange', linelength=0.05)
+
+    yticks = mtick.FormatStrFormatter('%.0f%%')
+    ax.yaxis.set_major_formatter(yticks)
+    ax.xaxis.set_major_formatter(large_formatter)
+
     ax.add_collection(x_events)
     ax.add_collection(util_events)
     ax.add_collection(fail_events)
