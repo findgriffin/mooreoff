@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 
 import mooreoff.monte_carlo as mc
 
@@ -54,3 +55,78 @@ class TestInsert(unittest.TestCase):
         self.assertTrue(result)
         self.assertListEqual(buckets, [0] * start + [1] * req_len + [0] * (
             num_buckets - start - req_len))
+
+    def test_many_with_sla_single(self):
+        # Given
+        bucket_count = 10
+        request_count = 1
+
+        # When
+        result = mc.insert_many_with_sla(bucket_count, request_count, 1)
+
+        # Then
+        self.assertEqual(result, 1)
+
+    def test_insert_many_easy(self):
+        # Given
+        bucket_count = 10000
+        request_count = 100
+
+        # When
+        result = mc.insert_many_with_sla(bucket_count, request_count, 1)
+
+        # Then
+        self.assertGreater(result, 98,
+                           "Very unlikely to breach SLA in this case.")
+
+    def test_insert_many_max_capacity(self):
+        # Given
+        bucket_count = 200
+        req_count = 20
+        req_len = 5
+
+        # When
+        result = mc.insert_many_with_sla(bucket_count, req_count, req_len)
+
+        # Then
+        self.assertLess(result, 50,
+                        "Very likely to breach SLA in this case.")
+
+    def test_insert_many_over_capacity(self):
+        # Given
+        bucket_count = 100
+        req_count = 11
+        req_len = 10
+
+        # When
+        with self.assertRaises(ValueError) as context:
+            mc.insert_many_with_sla(bucket_count, req_count, req_len)
+
+        # Then
+        self.assertEqual(str(context.exception),
+                         "Over capacity: 11 reqs x 10 buckets > 100 buckets "
+                         "x 1 capacity.")
+
+    def test_insert_performance_million_reqs(self):
+        # Given
+        bucket_count, req_count, req_len = (3_600_000, 1_000_000, 2)
+        # When
+        start = datetime.now()
+        mc.insert_many_with_sla(bucket_count, req_count, req_len)
+        delta = datetime.now() - start
+        # Then
+        self.assertEqual(delta.days, 0)
+        self.assertLess(delta.seconds, 4)
+
+    def test_insert_performance_more_reqs(self):
+        # Given
+        bucket_count, req_count, req_len = (3_600, 1_000_000, 2)
+        # When
+        start = datetime.now()
+        mc.insert_many_with_sla(bucket_count, req_count, req_len,
+                                max_threads=1000)
+        delta = datetime.now() - start
+
+        # Then
+        self.assertEqual(delta.days, 0)
+        self.assertLess(delta.seconds, 5)

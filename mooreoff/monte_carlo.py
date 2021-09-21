@@ -43,6 +43,32 @@ def insert_with_sla(req_start: int,
         return True
 
 
+def insert_many_with_sla(bucket_count: int,
+                         req_count: int,
+                         req_len: int,
+                         max_wait: int = 1,
+                         max_threads: int = 1) -> int:
+    if bucket_count < 0:
+        raise ValueError("There must be a positive number of buckets.")
+    if req_count < 1:
+        raise ValueError("More than one request is required.")
+    if max_threads <= 0 or max_wait <= 0:
+        raise ValueError("Max threads and max_wait must be > 0")
+    if (req_len * req_count) > (bucket_count * max_threads):
+        raise ValueError(f"Over capacity: {req_count} reqs x {req_len} "
+                         f"buckets > {bucket_count} buckets x {max_threads} "
+                         f"capacity.")
+    buckets = [0] * bucket_count
+    start_vals = [int(bucket_count * random.random())
+                  for idx in range(req_count)]
+    start_vals.sort()  # insert_with_sla only supports inserting in order
+    successes = 0
+    for val in start_vals:
+        if insert_with_sla(val, buckets, req_len, max_wait, max_threads):
+            successes += 1
+    return successes
+
+
 def timeit(func):
     def timer(*args, **kwargs):
         start_time = time.time()
