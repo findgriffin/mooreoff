@@ -42,12 +42,9 @@ def do_actual_insert(bucket_array: list[int],
 
 
 # Assumes that never gets called with span[0]_current < span[0]_previous
-def insert_with_sla(req_start: int,
-                    bucket_array: list[int],
-                    bucket_count: int,
-                    req_len: int = 1,
-                    max_wait: int = 1,
-                    max_threads: int = 1) -> bool:
+def insert_with_sla(req_start: int, bucket_array: list[int],
+                    bucket_count: int, req_len: int = 1,
+                    max_wait: int = 1, max_threads: int = 1) -> bool:
     fail_horizon = req_start + req_len + max_wait
     actual_start = wait(bucket_array, bucket_count, req_start,
                         fail_horizon, max_threads)
@@ -64,7 +61,7 @@ def insert_many_with_sla(bucket_count: int,
                          req_count: int,
                          req_len: int,
                          max_wait: int = 1,
-                         max_threads: int = 1) -> int:
+                         max_threads: int = 1) -> tuple[list[int], int]:
     if bucket_count < 0:
         raise ValueError("There must be a positive number of buckets.")
     if req_count < 1:
@@ -84,7 +81,7 @@ def insert_many_with_sla(bucket_count: int,
         if insert_with_sla(val, buckets, bucket_count,
                            req_len, max_wait, max_threads):
             successes += 1
-    return successes
+    return buckets, successes
 
 
 def timeit(func):
@@ -130,7 +127,7 @@ def calculate_utilization(percentiles: list[float],
 
 
 def buckets_and_requests(
-        params: SimulationParameters) -> tuple[list[int], int]:
+        params: SimulationParameters) -> tuple[int, int]:
     requests = min(
         int(params.requests_per_day * const.MIN_SIM_LENGTH_DAYS),
         const.MAX_REQUESTS_PER_SIMULATION)
@@ -138,20 +135,19 @@ def buckets_and_requests(
     bucket_count = int(const.MS_PER_SEC * simulation_secs)
     simulation_mins = simulation_secs / const.MIN_PER_HR
     logging.info(f"Simulation mins: {simulation_mins: .2f}.")
-    return [0] * bucket_count, requests
+    return bucket_count, requests
 
 
 @timeit
-def simulate(params: SimulationParameters) -> list[int]:
+def simulate(params: SimulationParameters) -> tuple[float, float]:
     logging.info(
         f"Monte Carlo: {params.request_duration_ms} ms request duration, "
         f"and {'{:,}'.format(params.requests_per_day)} requests per day. ")
-    buckets, request_count = buckets_and_requests(params)
-    run_insert(params.request_duration_ms, buckets, request_count)
-    buckets.sort()
-    percentiles = []
-    bucket_count = len(buckets)
-    for percentile in const.PERCENTILES:
-        bucket = bucket_for_percentile(percentile, bucket_count)
-        percentiles.append(buckets[bucket])
-    return percentiles
+    bucket_count, request_count = buckets_and_requests(params)
+    buckets, successes = insert_many_with_sla(bucket_count,
+                                              request_count,
+                                              params.request_duration_ms,
+                                              max_wait=params.max_wait)
+    failure_percent = (request_count - successes) / request_count
+    utilization = sum(buckets) / bucket_count
+    return utilization, failure_percent

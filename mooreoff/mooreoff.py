@@ -39,21 +39,39 @@ def print_csv_line(collection, row, prefix=''):
     logging.info(f"{row}\t" + ",\t".join([f"{prefix}{i}" for i in collection]))
 
 
+def calculate_daily_capacity(request_duration_ms: int = 1,
+                             max_threads: int = 1) -> int:
+    requests_per_sec = const.MS_PER_SEC / request_duration_ms
+    request_per_day_per_thread = requests_per_sec * const.SEC_PER_DAY
+    return int(request_per_day_per_thread * max_threads)
+
+
 def run(output: Optional[str] = None) -> None:
     if output:
         logging.debug(f"Output file: {output}.")
     else:
         logging.debug("No output file given.")
-    request_range = [10_000 * 10 ** (n - 1) for n in range(1, 5)]
-    percentiles = const.PERCENTILES
-    sla = 99
-    logging.info(f"Using SLA of {sla} to calculate utilization.")
-    results: list[tuple[int, list[int]]] = []
+    request_duration_ms = 100
+    max_threads = 1
+    max_wait = request_duration_ms
+    capacity = calculate_daily_capacity(request_duration_ms, max_threads)
+    logging.info(f"Request duration of {request_duration_ms}ms, "
+                 f"and max_threads of {max_threads} gives a daily capacity "
+                 f"of {capacity} requests.")
+    num_runs = 10
+    step = int(capacity/num_runs)
+    request_range = [i for i in range(step, capacity, step)]
+    logging.info(f"Running for {request_range}")
+    logging.info(f"Max wait for SLA is {max_wait}ms.")
+    results: list[tuple[int, float, float]] = []
     for requests in request_range:
-        params = SimulationParameters(request_duration_ms=10,
-                                      requests_per_day=requests)
-        result = monte_carlo.simulate(params)
-        results.append((requests, result))
-        utilization = monte_carlo.calculate_utilization(
-            percentiles, result, sla)
-        print_result(utilization[1], requests, utilization[0])
+        params = SimulationParameters(request_duration_ms=request_duration_ms,
+                                      requests_per_day=requests,
+                                      max_wait=max_wait)
+        utilization_fraction, fail_fraction = monte_carlo.simulate(params)
+        fail_percent = fail_fraction * const.PERCENT
+        utilization_percent = utilization_fraction * const.PERCENT
+        logging.info(f"For {requests} requests per day, got utilization of"
+                     f" {utilization_percent:.1f}%, with {fail_percent:.1f}% "
+                     "requests failing SLA.")
+        results.append((requests, utilization_fraction, fail_fraction))

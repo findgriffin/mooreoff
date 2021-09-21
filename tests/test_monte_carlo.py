@@ -65,7 +65,7 @@ class TestInsert(unittest.TestCase):
         result = mc.insert_many_with_sla(bucket_count, request_count, 1)
 
         # Then
-        self.assertEqual(result, 1)
+        self.assertEqual(result[1], 1)
 
     def test_insert_many_easy(self):
         # Given
@@ -76,7 +76,7 @@ class TestInsert(unittest.TestCase):
         result = mc.insert_many_with_sla(bucket_count, request_count, 1)
 
         # Then
-        self.assertGreater(result, 98,
+        self.assertGreater(result[1], 98,
                            "Very unlikely to breach SLA in this case.")
 
     def test_insert_many_max_capacity(self):
@@ -89,7 +89,7 @@ class TestInsert(unittest.TestCase):
         result = mc.insert_many_with_sla(bucket_count, req_count, req_len)
 
         # Then
-        self.assertLess(result, 50,
+        self.assertLess(result[1], 50,
                         "Very likely to breach SLA in this case.")
 
     def test_insert_many_over_capacity(self):
